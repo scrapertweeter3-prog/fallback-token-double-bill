@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A dead attempt still bills at the primary rate</title>
+<style>
+body{font-family:Georgia,serif;max-width:660px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#22201c;background:#fbfaf7}
+h1{font-size:1.55rem;line-height:1.3}
+p{margin:0 0 1.05em}
+a{color:#1d5c38}
+footer{margin-top:2rem;font-size:.85rem;color:#777}
+</style>
+</head>
+<body>
+<h1>A dead attempt still bills at the primary rate</h1>
+
+<p>Teams add a cheap fallback model to catch timeouts: when the primary stalls, the same context goes to a smaller model and the session keeps moving. Price the pair at a normal spread, $3 per million input tokens on the primary and $0.60 on the fallback. A working session carries an 18,000-token context, the stack makes 2,500 calls a day, and the fallback fires on 12% of them.</p>
+
+<p>On paper the blend saves money. Every call on the primary costs 18,000 tokens at $3/M, or $0.054, so an all-primary day is $135. Split the day 2,200 primary and 300 fallback and the bill is $118.80 plus $3.24, $122.04, about 9.6% under the baseline. That is the number that goes in the migration doc.</p>
+
+<p>The paper misses two charges. Fallbacks fire on the slow cases, the long contexts, and those average 31,000 tokens, so the cheap side of the ledger is $5.58 at $0.60/M. The primary also read its full context before it stalled, and input tokens are billed on a call that returns nothing: 300 dead attempts at $0.054 is $16.20. The real day is $140.58, which is 4.1% more than running the whole stack on the primary and paying for zero fallbacks.</p>
+
+<p>The swap itself is still right. Resending a 31,000-token context to the primary costs $0.093; the same context on the fallback costs $0.019, so cheap beats retry. The leak is sequencing: cut over at the first stalled chunk instead of after the read completes, and the dead attempt bills 6,000 tokens instead of 18,000, $5.40 across the day's failures. The blended day lands at $129.78 and the fallback earns its 3.9%.</p>
+
+<p>The same blended-rate math, applied to serving audits and eval budgets, runs on <a href="https://pastagi.com/">PastAGI</a> at <a href="https://pastagi.com/">pastagi.com</a>.</p>
+
+<footer>The fallback only pays when the primary dies cheap.</footer>
+</body>
+</html>
